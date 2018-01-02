@@ -2,8 +2,13 @@ package com.tnrkd.alchera.myapplication;
 
 
 import android.content.Context;
+import android.opengl.GLES10;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
+
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -11,10 +16,22 @@ import javax.microedition.khronos.opengles.GL10;
 public class Stage extends GLSurfaceView{
     private float w, h;
     private int screenW,screenH;
+    private FloatBuffer vertexBuffer;
     public Stage(Context context, AttributeSet attrs) {
         super(context,attrs);
         setEGLConfigChooser(8,8,8,8,0,0);
         setRenderer(new MyRenderer());
+        float vertices[]={
+                -0.5f,-0.5f,0.0f,
+                0.5f,-0.5f,0.0f,
+                -0.5f,0.5f,0.0f,
+                0.5f,0.5f,0.0f
+        };
+        ByteBuffer vbb= ByteBuffer.allocateDirect(vertices.length*4);
+        vbb.order(ByteOrder.nativeOrder());
+        vertexBuffer = vbb.asFloatBuffer();
+        vertexBuffer.put(vertices);
+        vertexBuffer.position(0);
     }
     private final class MyRenderer implements  GLSurfaceView.Renderer{
 
@@ -53,7 +70,14 @@ public class Stage extends GLSurfaceView{
 
         @Override
         public void onDrawFrame(GL10 gl10) {
-
+            gl10.glPushMatrix();
+            gl10.glClear(GLES10.GL_COLOR_BUFFER_BIT);
+            gl10.glTranslatef(w/2,h/2,0);
+            gl10.glScalef(120,100,0);
+            gl10.glColor4f(0,1,0,1);
+            gl10.glVertexPointer(3,GL10.GL_FLOAT,0,vertexBuffer);
+            gl10.glDrawArrays(GL10.GL_TRIANGLE_STRIP,0,4);
+            gl10.glPopMatrix();
         }
     }
 }
