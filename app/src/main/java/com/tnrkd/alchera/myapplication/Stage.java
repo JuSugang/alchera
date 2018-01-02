@@ -2,6 +2,7 @@ package com.tnrkd.alchera.myapplication;
 
 
 import android.content.Context;
+import android.media.Image;
 import android.opengl.GLES10;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
@@ -16,6 +17,13 @@ import javax.microedition.khronos.opengles.GL10;
 public class Stage extends GLSurfaceView{
     private float w, h;
     private int screenW,screenH;
+
+    private Texture tex;
+
+    private String img;
+
+    private  float xPos,yPos,r;
+
     private FloatBuffer vertexBuffer;
     public Stage(Context context, AttributeSet attrs) {
         super(context,attrs);
@@ -32,6 +40,9 @@ public class Stage extends GLSurfaceView{
         vertexBuffer = vbb.asFloatBuffer();
         vertexBuffer.put(vertices);
         vertexBuffer.position(0);
+
+        img = "ball2.png";
+        tex = new Texture(getResources().getIdentifier(img, "drawable", context.getPackageName()));
     }
     private final class MyRenderer implements  GLSurfaceView.Renderer{
 
@@ -45,6 +56,8 @@ public class Stage extends GLSurfaceView{
             gl10.glDisable(GL10.GL_DEPTH_TEST);
 
             gl10.glEnableClientState(GL10.GL_VERTEX_ARRAY);
+            gl10.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
+            tex.load(getContext());
         }
 
         @Override
@@ -60,6 +73,10 @@ public class Stage extends GLSurfaceView{
             screenH=height;
             screenW=width;
 
+            xPos = w/2;
+            yPos = h/2;
+            r=1;
+
             gl10.glViewport(0,0,screenW,screenH);
             gl10.glMatrixMode(GL10.GL_PROJECTION);
             gl10.glLoadIdentity();;
@@ -69,15 +86,11 @@ public class Stage extends GLSurfaceView{
         }
 
         @Override
-        public void onDrawFrame(GL10 gl10) {
-            gl10.glPushMatrix();
-            gl10.glClear(GLES10.GL_COLOR_BUFFER_BIT);
-            gl10.glTranslatef(w/2,h/2,0);
-            gl10.glScalef(120,100,0);
-            gl10.glColor4f(0,1,0,1);
-            gl10.glVertexPointer(3,GL10.GL_FLOAT,0,vertexBuffer);
-            gl10.glDrawArrays(GL10.GL_TRIANGLE_STRIP,0,4);
-            gl10.glPopMatrix();
+        public void onDrawFrame(GL10 gl) {
+            gl.glClear(GLES10.GL_COLOR_BUFFER_BIT);
+            tex.prepare(gl, GL10.GL_CLAMP_TO_EDGE);
+            gl.glVertexPointer(3, GL10.GL_FLOAT, 0, vertexBuffer);
+            tex.draw(gl, xPos, yPos, tex.getWidth()*r, tex.getHeight()*r, 0);
         }
     }
 }
